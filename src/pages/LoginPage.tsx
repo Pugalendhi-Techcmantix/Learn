@@ -8,11 +8,14 @@ import { ACCENT, INK } from '../config/antdTheme'
 
 type FormValues = { email: string; password: string }
 
-// Local test accounts from the backend seed. Shown here so you can sign in with one click.
-const TEST_ACCOUNTS: { label: string; values: FormValues }[] = [
-  { label: 'User', values: { email: 'user@example.com', password: 'Password@123' } },
-  { label: 'Admin', values: { email: 'admin@example.com', password: 'Password@123' } },
-]
+// Vite removes this development-only branch from production builds.
+const TEST_ACCOUNTS: { label: string; values: FormValues }[] =
+  import.meta.env.DEV && import.meta.env.VITE_TEST_PASSWORD
+    ? [
+        { label: 'User', values: { email: 'user@example.com', password: import.meta.env.VITE_TEST_PASSWORD } },
+        { label: 'Admin', values: { email: 'admin@example.com', password: import.meta.env.VITE_TEST_PASSWORD } },
+      ]
+    : []
 
 const LABS = [
   { icon: <ThunderboltOutlined />, title: 'React profiling', text: 'Find and fix slow re-renders with DevTools.' },
@@ -123,21 +126,23 @@ export default function LoginPage() {
             </Form>
           </div>
 
-          <div className="mt-5 flex flex-wrap items-center gap-2 text-sm text-neutral-600">
-            <span>Test accounts (local database):</span>
-            {TEST_ACCOUNTS.map((account) => (
-              <Button
-                key={account.label}
-                size="small"
-                onClick={() => {
-                  form.setFieldsValue(account.values)
-                  setError(null)
-                }}
-              >
-                Fill {account.label.toLowerCase()}
-              </Button>
-            ))}
-          </div>
+          {import.meta.env.DEV && TEST_ACCOUNTS.length > 0 && (
+            <div className="mt-5 flex flex-wrap items-center gap-2 text-sm text-neutral-600">
+              <span>Test accounts (local database):</span>
+              {TEST_ACCOUNTS.map((account) => (
+                <Button
+                  key={account.label}
+                  size="small"
+                  onClick={() => {
+                    form.setFieldsValue(account.values)
+                    setError(null)
+                  }}
+                >
+                  Fill {account.label.toLowerCase()}
+                </Button>
+              ))}
+            </div>
+          )}
         </div>
       </main>
     </div>

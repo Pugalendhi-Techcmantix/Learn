@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from 'express'
 import jwt from 'jsonwebtoken'
-import type { Role } from '../../generated/client.js'
+import type { RoleName } from '../lib/roles.js'
 import { verifyAccessToken, type AuthUser } from '../lib/tokens.js'
 
 // Lets TypeScript know that res.locals.user exists after requireAuth runs.
@@ -33,7 +33,7 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
 }
 
 // 403 = "I know who you are, but you are not allowed." Use after requireAuth.
-export function requireRole(role: Role) {
+export function requireRole(role: RoleName) {
   return (_req: Request, res: Response, next: NextFunction) => {
     if (res.locals.user?.role !== role) {
       res.status(403).json({ error: 'forbidden', message: 'You do not have permission for this.' })

@@ -1,5 +1,6 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios'
 import { env } from '../config/env'
+import { refreshResponseSchema } from './schemas'
 
 // The single Axios instance for the whole app. Every API call goes through it, so the
 // base URL, cookies, timeout and token handling are defined once, here.
@@ -37,19 +38,28 @@ api.interceptors.request.use((config) => {
 
 // If several requests fail with token_expired at the same time, refresh only ONCE.
 let refreshPromise: Promise<string> | null = null
+const REFRESH_TIMEOUT_MS = 8_000
 
 export function refreshAccessToken(): Promise<string> {
   // Bare axios on purpose: the refresh call must not pass through the interceptors below.
   refreshPromise ??= axios
-    .post<{ accessToken: string }>(`${env.apiUrl}/auth/refresh`, null, { withCredentials: true })
+    .post<unknown>(`${env.apiUrl}/auth/refresh`, null, {
+      timeout: REFRESH_TIMEOUT_MS,
+      withCredentials: true,
+    })
     .then((res) => {
-      setAccessToken(res.data.accessToken)
-      return res.data.accessToken
+      const data = refreshResponseSchema.parse(res.data)
+      setAccessToken(data.accessToken)
+      return data.accessToken
     })
     .finally(() => {
       refreshPromise = null
     })
   return refreshPromise
+}
+
+export function isRequestTimeout(error: unknown) {
+  return axios.isAxiosError(error) && (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT')
 }
 
 // ── Response interceptor: runs AFTER every response ────────────────────────────

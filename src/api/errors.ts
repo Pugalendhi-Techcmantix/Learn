@@ -1,7 +1,9 @@
 import axios, { AxiosError } from 'axios'
+import { ZodError } from 'zod'
 
 // Turn any error into one short sentence for the user.
 export function describeError(error: unknown): string {
+  if (error instanceof ZodError) return 'The server returned data in an unexpected format.'
   if (!axios.isAxiosError(error)) return 'Unexpected error.'
 
   if (error.code === AxiosError.ECONNABORTED) return 'The server took too long to answer (timeout).'

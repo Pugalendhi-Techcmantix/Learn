@@ -1,24 +1,56 @@
 import bcrypt from 'bcryptjs'
-import { Role } from '../generated/client.js'
 import { prisma } from '../src/lib/prisma.js'
+import { ROLE_NAMES } from '../src/lib/roles.js'
 
-// Local test password for both seeded users. Never reuse it anywhere real.
-const TEST_PASSWORD = 'Password@123'
 const CATEGORIES = ['Books', 'Games', 'Music', 'Tools', 'Toys']
 
-async function main() {
-  const passwordHash = await bcrypt.hash(TEST_PASSWORD, 10)
+const ROLES = [
+  { name: ROLE_NAMES.ADMIN, description: 'Full access, including the admin API' },
+  { name: ROLE_NAMES.USER, description: 'Standard access' },
+]
 
-  // upsert = create if missing, otherwise leave as is. Safe to run the seed many times.
+async function main() {
+  if (process.env.NODE_ENV !== 'development') {
+    throw new Error('Refusing to seed test users outside NODE_ENV=development.')
+  }
+
+  const testPassword = process.env.SEED_TEST_PASSWORD
+  if (!testPassword) {
+    throw new Error('SEED_TEST_PASSWORD is required for local development seeds.')
+  }
+
+  // Roles first: users point at them through roleId.
+  // upsert = create if missing, otherwise update. Safe to run the seed many times.
+  for (const role of ROLES) {
+    await prisma.role.upsert({
+      where: { name: role.name },
+      update: { description: role.description },
+      create: role,
+    })
+  }
+
+  const passwordHash = await bcrypt.hash(testPassword, 10)
+
+  // update is empty on purpose: an existing user keeps their current role and password.
   await prisma.user.upsert({
     where: { email: 'admin@example.com' },
     update: {},
-    create: { email: 'admin@example.com', name: 'Admin', passwordHash, role: Role.ADMIN },
+    create: {
+      email: 'admin@example.com',
+      name: 'Admin',
+      passwordHash,
+      role: { connect: { name: ROLE_NAMES.ADMIN } },
+    },
   })
   await prisma.user.upsert({
     where: { email: 'user@example.com' },
     update: {},
-    create: { email: 'user@example.com', name: 'Normal User', passwordHash, role: Role.USER },
+    create: {
+      email: 'user@example.com',
+      name: 'Normal User',
+      passwordHash,
+      role: { connect: { name: ROLE_NAMES.USER } },
+    },
   })
 
   // Products: wipe and recreate so the list is always the same 20 rows.
@@ -31,9 +63,12 @@ async function main() {
     })),
   })
 
-  const users = await prisma.user.count()
-  const products = await prisma.product.count()
-  console.log(`Seed done: ${users} users, ${products} products`)
+  const [roles, users, products] = await Promise.all([
+    prisma.role.count(),
+    prisma.user.count(),
+    prisma.product.count(),
+  ])
+  console.log(`Seed done: ${roles} roles, ${users} users, ${products} products`)
 }
 
 main()

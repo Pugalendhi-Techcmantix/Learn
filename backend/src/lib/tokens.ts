@@ -1,11 +1,11 @@
 import jwt from 'jsonwebtoken'
-import type { Role } from '../../generated/client.js'
 import { config } from './env.js'
+import { asRoleName, type RoleName } from './roles.js'
 
 export type AuthUser = {
   id: number
   email: string
-  role: Role
+  role: RoleName
 }
 
 // Access token: short life (30s here, so you can watch it expire). Sent in the Authorization header.
@@ -25,7 +25,7 @@ export function signRefreshToken(userId: number): string {
 // Both verify functions throw jwt.TokenExpiredError or jwt.JsonWebTokenError when the token is bad.
 export function verifyAccessToken(token: string): AuthUser {
   const payload = jwt.verify(token, config.jwtAccessSecret) as jwt.JwtPayload
-  return { id: Number(payload.sub), email: String(payload.email), role: payload.role as Role }
+  return { id: Number(payload.sub), email: String(payload.email), role: asRoleName(String(payload.role)) }
 }
 
 export function verifyRefreshToken(token: string): number {

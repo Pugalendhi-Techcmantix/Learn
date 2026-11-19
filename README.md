@@ -17,7 +17,7 @@ Start MySQL in the XAMPP Control Panel first, then:
 
 ```bash
 cd backend
-cp .env.example .env # then fill in the JWT secrets
+cp .env.example .env # then fill in the JWT secrets and local seed password
 npm install
 npm run db:generate  # build the Prisma Client
 npm run db:migrate   # create the database and tables
@@ -25,7 +25,10 @@ npm run db:seed      # test users + products
 npm run dev          # http://localhost:4000
 ```
 
-Test logins (local only): `user@example.com` / `admin@example.com`, password `Password@123`.
+Local development can seed `user@example.com` and `admin@example.com`. Set a unique
+`SEED_TEST_PASSWORD` in `backend/.env` and use the same value as `VITE_TEST_PASSWORD`
+in the frontend `.env` to enable the development-only fill buttons. The seed refuses
+to run unless `NODE_ENV=development`; never seed these accounts in staging or production.
 
 ## Daily log
 

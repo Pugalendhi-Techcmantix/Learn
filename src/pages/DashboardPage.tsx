@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Alert, Button, Input, Segmented, Table } from 'antd'
+import { Alert, Button, Input, Pagination, Segmented, Table } from 'antd'
 import { ReloadOutlined, SearchOutlined } from '@ant-design/icons'
 import { describeError } from '../api/errors'
 import { fetchProducts } from '../api/products'
 import type { Product } from '../api/types'
+import { usePagination } from '../hooks/usePagination'
 
 const priceFormat = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' })
 
@@ -17,6 +18,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 }
 
 const ALL = 'All'
+const PAGE_SIZE = 10
 
 export default function DashboardPage() {
   const [products, setProducts] = useState<Product[]>([])
@@ -58,6 +60,14 @@ export default function DashboardPage() {
     )
   }, [products, search, category])
 
+  // Going back to page 1 whenever the filters change, and staying inside the valid pages.
+  const pagination = usePagination({
+    total: visible.length,
+    pageSize: PAGE_SIZE,
+    resetKey: `${category}|${search.trim().toLowerCase()}`,
+  })
+  const pageItems = pagination.slice(visible)
+
   return (
     <section className="overflow-hidden rounded-2xl border border-[#e5e8ec] bg-white">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#edf0f3] p-4 sm:px-5">
@@ -95,15 +105,9 @@ export default function DashboardPage() {
       <Table<Product>
         rowKey="id"
         loading={loading}
-        dataSource={visible}
+        dataSource={pageItems}
         scroll={{ x: 480 }}
-        pagination={{
-          pageSize: 10,
-          showSizeChanger: false,
-          hideOnSinglePage: true,
-          className: 'px-5!',
-          showTotal: (total) => <span className="tabular">{total} products</span>,
-        }}
+        pagination={false}
         locale={{ emptyText: search || category !== ALL ? 'No products match your filters.' : 'No products yet.' }}
         columns={[
           {
@@ -139,6 +143,22 @@ export default function DashboardPage() {
           },
         ]}
       />
+
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#edf0f3] px-4 py-3 sm:px-5">
+        <p className="m-0 text-sm text-neutral-600 tabular" aria-live="polite">
+          {pagination.total === 0
+            ? 'No products'
+            : `Showing ${pagination.from}–${pagination.to} of ${pagination.total}`}
+        </p>
+        <Pagination
+          current={pagination.page}
+          pageSize={pagination.pageSize}
+          total={pagination.total}
+          onChange={pagination.setPage}
+          showSizeChanger={false}
+          hideOnSinglePage
+        />
+      </div>
     </section>
   )
 }

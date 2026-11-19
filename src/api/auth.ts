@@ -1,9 +1,10 @@
 import { api } from './client'
+import { loginResponseSchema, userResponseSchema } from './schemas'
 import type { LoginResponse, User } from './types'
 
 export async function login(email: string, password: string): Promise<LoginResponse> {
-  const res = await api.post<LoginResponse>('/auth/login', { email, password })
-  return res.data
+  const res = await api.post<unknown>('/auth/login', { email, password })
+  return loginResponseSchema.parse(res.data)
 }
 
 export async function logout(): Promise<void> {
@@ -11,6 +12,6 @@ export async function logout(): Promise<void> {
 }
 
 export async function fetchMe(): Promise<User> {
-  const res = await api.get<{ user: User }>('/api/me')
-  return res.data.user
+  const res = await api.get<unknown>('/api/me')
+  return userResponseSchema.parse(res.data).user
 }
