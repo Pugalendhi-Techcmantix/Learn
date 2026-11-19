@@ -1,19 +1,27 @@
-import { Tabs } from 'antd'
+import { Navigate, Route, Routes } from 'react-router-dom'
+import RequireAuth from './auth/RequireAuth'
 import Day1Profiling from './day1/Day1Profiling'
 import Day2Network from './day2/Day2Network'
+import AppLayout from './layouts/AppLayout'
+import DashboardPage from './pages/DashboardPage'
+import LoginPage from './pages/LoginPage'
 
 function App() {
   return (
-    <div className="mx-auto max-w-4xl p-4">
-      <Tabs
-        defaultActiveKey="day2"
-        destroyOnHidden
-        items={[
-          { key: 'day1', label: 'Day 1 · Profiling', children: <Day1Profiling /> },
-          { key: 'day2', label: 'Day 2 · Network & Auth', children: <Day2Network /> },
-        ]}
-      />
-    </div>
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+
+      {/* Everything below needs a signed-in user */}
+      <Route element={<RequireAuth />}>
+        <Route element={<AppLayout />}>
+          <Route index element={<DashboardPage />} />
+          <Route path="labs/day1" element={<Day1Profiling />} />
+          <Route path="labs/day2" element={<Day2Network />} />
+        </Route>
+      </Route>
+
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   )
 }
 

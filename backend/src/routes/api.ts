@@ -6,8 +6,16 @@ import { requireAuth, requireRole } from '../middleware/auth.js'
 export const apiRouter = Router()
 
 // GET /api/me  → who am I? (401 without a valid token)
-apiRouter.get('/me', requireAuth, (_req, res) => {
-  res.json({ user: res.locals.user })
+apiRouter.get('/me', requireAuth, async (_req, res) => {
+  const user = await prisma.user.findUnique({
+    where: { id: res.locals.user!.id },
+    select: { id: true, email: true, name: true, role: true },
+  })
+  if (!user) {
+    res.status(401).json({ error: 'invalid_token', message: 'This account no longer exists.' })
+    return
+  }
+  res.json({ user })
 })
 
 // GET /api/products  → protected list (401 without a valid token)

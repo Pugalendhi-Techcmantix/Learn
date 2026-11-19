@@ -12,7 +12,7 @@ export default function SearchBox({ value, onChange }: Props) {
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder="Search products..."
-      className="!w-80 !my-3"
+      className="w-80! my-3!"
     />
   )
 }

@@ -3,8 +3,19 @@ import { products } from '../data'
 import Header from '../components/Header'
 import SearchBox from '../components/SearchBox'
 import ProductList from '../components/ProductList'
+import { ThemeProvider } from '../theme/ThemeProvider'
 
+// The theme provider (with its ticking clock) only wraps this lab,
+// so the rest of the app doesn't re-render every second.
 export default function Day1Profiling() {
+  return (
+    <ThemeProvider>
+      <Lab />
+    </ThemeProvider>
+  )
+}
+
+function Lab() {
   const [search, setSearch] = useState('')
   const [selectedId, setSelectedId] = useState<number | null>(null)
 

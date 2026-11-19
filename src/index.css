@@ -1,1 +1,63 @@
 @import "tailwindcss";
+@import "@fontsource/ibm-plex-sans/400.css";
+@import "@fontsource/ibm-plex-sans/500.css";
+@import "@fontsource/ibm-plex-sans/600.css";
+
+:root {
+  --ink: #10161d;
+  --accent: #0f766e;
+}
+
+body {
+  margin: 0;
+  background: #f4f5f7;
+  font-family: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Browser surfaces themed from the palette */
+::selection {
+  background: var(--accent);
+  color: #fff;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #b9c0c8 transparent;
+}
+
+/* Numbers in tables line up */
+.ant-table-cell,
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* The one authored motion: a page fades in a few pixels from below when you change route. */
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.page-in {
+  animation: page-in 220ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

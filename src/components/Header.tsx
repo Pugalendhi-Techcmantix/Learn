@@ -6,7 +6,7 @@ export default function Header() {
 
   return (
     <header className="flex items-center gap-4">
-      <Typography.Title level={2} className="!m-0">
+      <Typography.Title level={2} className="m-0!">
         Product Lab
       </Typography.Title>
       <span className="text-gray-500 tabular-nums">{now.toLocaleTimeString()}</span>
